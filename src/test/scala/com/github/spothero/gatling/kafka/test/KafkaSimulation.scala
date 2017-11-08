@@ -6,23 +6,14 @@ import scala.concurrent.duration._
 
 import com.github.mnogu.gatling.kafka.Predef._
 
-// Extend Scala Random with a random byte generator for this test
-implicit class ExtendedRandom(ran: scala.util.Random) {
-  def nextByteArray(size: Int) = {
-    val arr = new Array[Byte](size)
-    ran.nextBytes(arr)
-    arr
-  }
-}
-
 class KafkaSimulation extends Simulation {
   // Fetch config
   val host = sys.env("KAFKA_HOST")
   val port = sys.env("KAFKA_PORT")
   val topicName = sys.env("KAFKA_TOPIC")
-  val users = sys.env("USERS")
-  val duration = sys.env("TEST_DURATION_SECS")
-  val messageSizeBytes = sys.env("MESSAGE_SIZE_BYTES")
+  val users = sys.env("USERS").toInt
+  val duration = sys.env("TEST_DURATION_SECS").toInt
+  val messageSizeBytes = sys.env("MESSAGE_SIZE_BYTES").toInt
 
   val kafkaConf = kafka
     // Kafka topic name
@@ -44,7 +35,7 @@ class KafkaSimulation extends Simulation {
     .exec(
       kafka("request")
         // message to send
-        .send(scala.util.Random.nextByteArray(messageSizeBytes): Array[Byte]))
+        .send(Array.fill(messageSizeBytes)((scala.util.Random.nextInt(256) - 128).toByte): Array[Byte]))
 
   setUp(
     scn
